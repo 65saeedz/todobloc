@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
- 
+
 import 'package:todo_app_cubit/models/todo.dart';
 
 import '../todofilter/todofilter_bloc.dart';
@@ -27,48 +27,44 @@ class TodofilteredsearchedBloc
     required this.todosearchBloc,
   }) : super(TodofilteredsearchedState.initial()) {
     todofilterBlocsubscription = todofilterBloc.stream.listen((event) {
-      setFilters_Searches();
+      add(SetFilters_SearchesEvent());
     });
     todosearchBlocsubscription = todosearchBloc.stream.listen((event) {
-      setFilters_Searches();
+      add(SetFilters_SearchesEvent());
     });
     todolistBlocsubscription = todolistBloc.stream.listen((event) {
-      setFilters_Searches();
+      add(SetFilters_SearchesEvent());
     });
 
     on<SetFilters_SearchesEvent>(((event, emit) {
-      
+      List<Todo> newToDoList = [];
+      switch (todofilterBloc.state.filterStatus) {
+        case Filter.active:
+          newToDoList = todolistBloc.state.todolist
+              .where((todo) => !todo.isCompleted)
+              .toList();
+
+          break;
+        case Filter.compeleted:
+          newToDoList = todolistBloc.state.todolist
+              .where((todo) => todo.isCompleted)
+              .toList();
+
+          break;
+        case Filter.all:
+          newToDoList = todolistBloc.state.todolist;
+
+          break;
+      }
+      if (todosearchBloc.state.searchTerm.isNotEmpty) {
+        newToDoList = newToDoList
+            .where((todo) => todo.description
+                .toLowerCase()
+                .contains(todosearchBloc.state.searchTerm))
+            .toList();
+      }
+      emit(state.copyWith(searchedFilteredToDoes: newToDoList));
     }));
-  }
-  void setFilters_Searches()
-       {
-    List<Todo> newToDoList = [];
-    switch (todofilterBloc.state.filterStatus) {
-      case Filter.active:
-        newToDoList = todolistBloc.state.todolist
-            .where((todo) => !todo.isCompleted)
-            .toList();
-
-        break;
-      case Filter.compeleted:
-        newToDoList = todolistBloc.state.todolist
-            .where((todo) => todo.isCompleted)
-            .toList();
-
-        break;
-      case Filter.all:
-        newToDoList = todolistBloc.state.todolist;
-
-        break;
-    }
-    if (todosearchBloc.state.searchTerm.isNotEmpty) {
-      newToDoList = newToDoList
-          .where((todo) => todo.description
-              .toLowerCase()
-              .contains(todosearchBloc.state.searchTerm))
-          .toList();
-    }
-    emit(state.copyWith(searchedFilteredToDoes: newToDoList));
   }
 
   @override

@@ -24,7 +24,7 @@ class TodoactivecountBloc
       );
     });
   }
-  void setIncompletedToDosCount() {}
+ 
 
   @override
   Future<void> close() {
